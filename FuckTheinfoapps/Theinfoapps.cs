@@ -15,11 +15,11 @@ namespace FuckTheinfoapps
         private HttpWebRequest getSongObjByPlayListReq, syncDLCountReq;
         private WebResponse getSongObjByPlayListRes, syncDLCountRes;
         private Stream getSongObjByPlayListStream, syncDLCountReqStream, syncDLCountStream;
-        private string idfa;
         private WebClient client;
         private string getJsonUri;
         private dynamic obj;
         private string has_more;
+        private string idfa;
 
         public Theinfoapps()
         {
