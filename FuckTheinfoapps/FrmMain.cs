@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace FuckTheinfoapps
@@ -14,28 +15,45 @@ namespace FuckTheinfoapps
         {
             InitializeComponent();
             listView1.Columns.RemoveAt(2);
+            listView2.Columns.RemoveAt(2);
             tApps = new Theinfoapps();
         }
 
         private void 再生PToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listView1.Items.Count <= 0)
-                return;
-
-            MPlayer.URL = listView1.SelectedItems[0].SubItems[2].Text;
-            MPlayer.Ctlcontrols.play();
+            if (listView1.Items.Count >= 0 && listView1.SelectedIndices.Count == 1)
+            {
+                MPlayer.URL = listView1.SelectedItems[0].SubItems[2].Text;
+                MPlayer.Ctlcontrols.play();
+            }
+            else if (listView2.Items.Count >= 0 && listView2.SelectedIndices.Count == 1)
+            {
+                MPlayer.URL = listView2.SelectedItems[0].SubItems[2].Text;
+                MPlayer.Ctlcontrols.play();
+            }
         }
 
         private void ダウンロードDToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listView1.Items.Count <= 0)
-                return;
-
-            SaveFileDialog sfd = SaveFileHelper.Create($"{listView1.SelectedItems[0].Text}.mp3");
-            if (sfd.ShowDialog() == DialogResult.OK)
+            SaveFileDialog sfd;
+            FrmDownload frmDownload;
+            if (listView1.Items.Count >= 0 && listView1.SelectedIndices.Count == 1)
             {
-                FrmDownload frmDownload = new FrmDownload(sfd.FileName, listView1.SelectedItems[0].SubItems[2].Text);
-                frmDownload.Show();
+                sfd = SaveFileHelper.Create($"{listView1.SelectedItems[0].Text}.mp3");
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    frmDownload = new FrmDownload(sfd.FileName, listView1.SelectedItems[0].SubItems[2].Text);
+                    frmDownload.Show();
+                }
+            }
+            else if (listView2.Items.Count >= 0 && listView2.SelectedIndices.Count == 1)
+            {
+                sfd = SaveFileHelper.Create($"{listView2.SelectedItems[0].Text}.mp3");
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    frmDownload = new FrmDownload(sfd.FileName, listView2.SelectedItems[0].SubItems[2].Text);
+                    frmDownload.Show();
+                }
             }
         }
 
@@ -53,6 +71,12 @@ namespace FuckTheinfoapps
             }
         }
 
+        private void ダウンロード回数改竄HToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmDLCnt frmDLCnt = new FrmDLCnt();
+            frmDLCnt.Show();
+        }
+
         private void アプリケーション終了XToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Environment.Exit(0);
@@ -64,6 +88,15 @@ namespace FuckTheinfoapps
                 return;
 
             MPlayer.URL = listView1.SelectedItems[0].SubItems[2].Text;
+            MPlayer.Ctlcontrols.play();
+        }
+
+        private void listView2_DoubleClick(object sender, EventArgs e)
+        {
+            if (listView2.Items.Count <= 0)
+                return;
+            
+            MPlayer.URL = listView2.SelectedItems[0].SubItems[2].Text;
             MPlayer.Ctlcontrols.play();
         }
 
@@ -81,6 +114,16 @@ namespace FuckTheinfoapps
         private void nextButton_Click(object sender, EventArgs e)
         {
             Next();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            LoadPlayList();
+        }
+
+        private void playList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadSongByPlayList();
         }
 
         private void Scan()
@@ -123,12 +166,12 @@ namespace FuckTheinfoapps
                 return;
             }
             pNumber++;
-            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);    
         }
 
         private bool ScanMusicList(int _sCount)
         {
-            obj = tApps.GetObject(songName.Text, _sCount);
+            obj = tApps.GetSongObj(songName.Text, _sCount);
             if (obj == null)
                 return false;
 
@@ -139,6 +182,43 @@ namespace FuckTheinfoapps
                 itemx.SubItems.Add(data.url);
             }
             return true;
+        }
+
+        private void LoadPlayList()
+        {
+            playList.DataSource = null;
+            playList.Items.Clear();
+
+            obj = tApps.GetPlaylistObj("u3859021544345334070001472");
+            if (obj == null)
+                return;
+
+            List<Playlist> playListItem = new List<Playlist>();
+            Playlist pList;
+            foreach (var data in obj.data.song_lists)
+            {
+                pList = new Playlist(data.song_list_name.ToString(), data.song_list_id.ToString());
+                playListItem.Add(pList);
+            }
+            playList.DisplayMember = "Name";
+            playList.ValueMember = "Url";
+            playList.DataSource = playListItem;
+        }
+
+        private void LoadSongByPlayList()
+        {
+            listView2.Items.Clear();
+            obj = tApps.GetSongObjByPlayList(((Playlist)playList.SelectedItem).Url);
+            if (obj == null)
+                return;
+
+            foreach (var data in obj.data.songs)
+            {
+                itemx = listView2.Items.Add(data.title);
+                itemx.SubItems.Add(data.artist);
+                itemx.SubItems.Add(data.url);
+            }
+            listView2.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
     }
 }
