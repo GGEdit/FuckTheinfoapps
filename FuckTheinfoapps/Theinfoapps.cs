@@ -141,7 +141,7 @@ namespace FuckTheinfoapps
             dic["sync_infos[][value]"] = value;
 
             foreach (string key in dic.Keys)
-                param += String.Format("{0}={1}&", key, dic[key]);
+                param += $"{key}={dic[key]}&";
 
             byte[] data = Encoding.ASCII.GetBytes(param);
             syncDLCountReq = (HttpWebRequest)WebRequest.Create($"https://theinfoapps.com/myfm/dlquota/sync/?idfa={idfa}");
