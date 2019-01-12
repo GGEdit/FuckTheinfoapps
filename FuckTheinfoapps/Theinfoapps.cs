@@ -1,21 +1,12 @@
 ﻿using Codeplex.Data;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Text;
 
 namespace FuckTheinfoapps
 {
     class Theinfoapps
     {
-        private Cookie cookie;
-        private Uri uri;
-        private CookieContainer cookieContainer;
-        private HttpWebRequest getSongObjByPlayListReq, syncDLCountReq;
-        private WebResponse getSongObjByPlayListRes, syncDLCountRes;
-        private Stream getSongObjByPlayListStream, syncDLCountReqStream, syncDLCountStream;
-        private WebClient client;
+        private HttpClient httpClient;
         private string getJsonUri;
         private dynamic obj;
         private string has_more;
@@ -23,35 +14,27 @@ namespace FuckTheinfoapps
 
         public Theinfoapps()
         {
-            client = new WebClient();
-            cookie = new Cookie("sessionid", "sug3hctj326h6cex1xuwa9mc52judn0f");
-            uri = new Uri("https://theinfoapps.com");
-            cookieContainer = new CookieContainer();
-            cookieContainer.Add(uri, cookie);
+            httpClient = new HttpClient();
+            httpClient.SetCookie(new Uri("https://theinfoapps.com"), "sessionid", "sug3hctj326h6cex1xuwa9mc52judn0f");
         }
 
         public Theinfoapps(string sessionId)
         {
-            client = new WebClient();
-            cookie = new Cookie("sessionid", sessionId);
-            uri = new Uri("https://theinfoapps.com");
-            cookieContainer = new CookieContainer();
-            cookieContainer.Add(uri, cookie);
+            httpClient = new HttpClient();
+            httpClient.SetCookie(new Uri("https://theinfoapps.com"), "sessionid", sessionId);
         }
 
         public Theinfoapps(string sessionId, string _idfa)
         {
-            client = new WebClient();
-            cookie = new Cookie("sessionid", sessionId);
-            uri = new Uri("https://theinfoapps.com");
-            cookieContainer = new CookieContainer();
-            cookieContainer.Add(uri, cookie);
+            httpClient = new HttpClient();
+            httpClient.SetCookie(new Uri("https://theinfoapps.com"), "sessionid", sessionId);
             idfa = _idfa;
         }
 
         public dynamic GetSongObj(string songName, int sCount)
         {
-            getJsonUri = client.DownloadString($"https://theinfoapps.com/myfm/search/v2/?appid=com.tenormusicfm.ios.fm&page_no={sCount}&query={songName}");
+            httpClient.RequestUri = new Uri($"https://theinfoapps.com/myfm/search/v2/?appid=com.tenormusicfm.ios.fm&page_no={sCount}&query={songName}");
+            getJsonUri = httpClient.Get();
             obj = DynamicJson.Parse(getJsonUri);
             if (!this.ExistsSongObject(obj))
             {
@@ -71,7 +54,8 @@ namespace FuckTheinfoapps
 
         public dynamic GetPlaylistObj(string uid)
         {
-            getJsonUri = client.DownloadString($"https://theinfoapps.com/myfm/user/profile/?uid={uid}");
+            httpClient.RequestUri = new Uri($"https://theinfoapps.com/myfm/user/profile/?uid={uid}");
+            getJsonUri = httpClient.Get();
             obj = DynamicJson.Parse(getJsonUri);
             if (!ExistsPlaylistObject(obj))
             {
@@ -92,14 +76,10 @@ namespace FuckTheinfoapps
 
         public dynamic GetSongObjByPlayList(string songListid)
         {
-            getSongObjByPlayListReq = (HttpWebRequest)WebRequest.Create($"https://theinfoapps.com/myfm/songlist/detail/?client_send_version=-1&song_list_id={songListid}");
-            getSongObjByPlayListReq.Method = "GET";
-            getSongObjByPlayListReq.CookieContainer = cookieContainer;
-            getSongObjByPlayListRes = getSongObjByPlayListReq.GetResponse();
+            httpClient.RequestUri = new Uri($"https://theinfoapps.com/myfm/songlist/detail/?client_send_version=-1&song_list_id={songListid}");
+            var result = httpClient.Get();
 
-            getSongObjByPlayListStream = getSongObjByPlayListRes.GetResponseStream();
-            var streamReader = new StreamReader(getSongObjByPlayListStream);
-            obj = DynamicJson.Parse(streamReader.ReadToEnd());
+            obj = DynamicJson.Parse(result);
             if (!ExistsSongObjByPlayList(obj))
             {
                 return null;
@@ -133,30 +113,18 @@ namespace FuckTheinfoapps
 
         public void SyncDLCount(string item_id, string optime, string type, string value)
         {
-            string param = string.Empty;
             var dic = new Dictionary<string, string>();
             dic["sync_infos[][item_id]"] = item_id;
             dic["sync_infos[][optime]"] = optime;
             dic["sync_infos[][type]"] = type;
             dic["sync_infos[][value]"] = value;
 
-            foreach (string key in dic.Keys)
-                param += $"{key}={dic[key]}&";
+            httpClient.RequestUri = new Uri($"https://theinfoapps.com/myfm/dlquota/sync/?idfa={idfa}");
+            httpClient.SetPostParam(dic);
+            httpClient.ContentType = "application/x-www-form-urlencoded";
+            var result = httpClient.Post();
 
-            byte[] data = Encoding.ASCII.GetBytes(param);
-            syncDLCountReq = (HttpWebRequest)WebRequest.Create($"https://theinfoapps.com/myfm/dlquota/sync/?idfa={idfa}");
-            syncDLCountReq.Method = "POST";
-            syncDLCountReq.CookieContainer = cookieContainer;
-            syncDLCountReq.ContentType = "application/x-www-form-urlencoded";
-            syncDLCountReq.ContentLength = data.Length;
-
-            syncDLCountReqStream = syncDLCountReq.GetRequestStream();
-            syncDLCountReqStream.Write(data, 0, data.Length);
-
-            syncDLCountRes = syncDLCountReq.GetResponse();
-            syncDLCountStream = syncDLCountRes.GetResponseStream();
-            var reader = new StreamReader(syncDLCountStream, Encoding.GetEncoding("Shift_JIS"));
-            obj = DynamicJson.Parse(reader.ReadToEnd());
+            obj = DynamicJson.Parse(result);
             if (!IsSyncDLCountSucceeded(obj))
                 throw new ArgumentException();
         }
