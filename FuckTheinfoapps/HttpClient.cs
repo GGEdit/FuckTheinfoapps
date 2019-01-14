@@ -31,11 +31,24 @@ class HttpClient
         postKeyValuePairs = new Dictionary<string, string>(_postKeyValuePairs);
     }
 
-    public void SetPostParam(Dictionary<string, string> _postKeyValuePairs)
+    //Parameter
+    public void SetParam(Dictionary<string, string> _postKeyValuePairs)
     {
         postKeyValuePairs = new Dictionary<string, string>(_postKeyValuePairs);
     }
 
+    public void AddParam(Dictionary<string, string> _postKeyValuePairs)
+    {
+        foreach (var data in _postKeyValuePairs)
+            postKeyValuePairs.Add(data.Key, data.Value);
+    }
+
+    public void AddParam(string _key, string _value)
+    {
+        postKeyValuePairs.Add(_key, _value);
+    }
+
+    //Cookie
     public void SetCookie(Uri _uri, string _key, string _value)
     {
         if (_uri == null)
@@ -65,12 +78,6 @@ class HttpClient
         }
     }
 
-    public void SetHeader(Dictionary<string, string> _headersKeyValuePairs)
-    {
-        if (_headersKeyValuePairs != null)
-            headersKeyValuePairs = new Dictionary<string, string>(_headersKeyValuePairs);
-    }
-
     public CookieCollection GetCookies(Uri _uri)
     {
         return request.CookieContainer.GetCookies(_uri);
@@ -82,6 +89,25 @@ class HttpClient
             return null;
 
         return response.Cookies;
+    }
+
+    //Header
+    public void SetHeader(Dictionary<string, string> _headersKeyValuePairs)
+    {
+        if (_headersKeyValuePairs != null)
+            headersKeyValuePairs = new Dictionary<string, string>(_headersKeyValuePairs);
+    }
+
+    public void AddHeader(Dictionary<string, string> _headersKeyValuePairs)
+    {
+        if (_headersKeyValuePairs != null)
+            foreach (var data in _headersKeyValuePairs)
+                headersKeyValuePairs.Add(data.Key, data.Value);
+    }
+
+    public void AddHeader(string _key, string _value)
+    {
+        headersKeyValuePairs.Add(_key, _value);
     }
 
     public string Get()
