@@ -7,7 +7,7 @@ using System.Text;
 class HttpClient
 {
     private HttpWebRequest request;
-    private WebResponse response;
+    private HttpWebResponse response;
     private Cookie cookie;
     private CookieContainer cookieContainer;
     private Dictionary<string, string> postKeyValuePairs, headersKeyValuePairs;
@@ -71,6 +71,19 @@ class HttpClient
             headersKeyValuePairs = new Dictionary<string, string>(_headersKeyValuePairs);
     }
 
+    public CookieCollection GetCookies(Uri _uri)
+    {
+        return request.CookieContainer.GetCookies(_uri);
+    }
+
+    public CookieCollection GetResponseCookies()
+    {
+        if (response == null)
+            return null;
+
+        return response.Cookies;
+    }
+
     public string Get()
     {
         if (RequestUri == null)
@@ -93,7 +106,7 @@ class HttpClient
             request.UserAgent = UserAgent;
             request.Expect = Expect;
 
-            response = request.GetResponse();
+            response = (HttpWebResponse)request.GetResponse();
             stream = response.GetResponseStream();
             reader = new StreamReader(stream);
 
@@ -136,7 +149,7 @@ class HttpClient
             stream = request.GetRequestStream();
             stream.Write(data, 0, data.Length);
 
-            response = request.GetResponse();
+            response = (HttpWebResponse)request.GetResponse();
             stream = response.GetResponseStream();
             reader = new StreamReader(stream, Encoding.GetEncoding("Shift_JIS"));
 
