@@ -120,7 +120,7 @@ namespace FuckTheinfoapps
             dic["sync_infos[][value]"] = value;
 
             httpClient.RequestUri = new Uri($"https://theinfoapps.com/myfm/dlquota/sync/?idfa={idfa}");
-            httpClient.SetPostParam(dic);
+            httpClient.AddParam(dic);
             httpClient.ContentType = "application/x-www-form-urlencoded";
             var result = httpClient.Post();
 

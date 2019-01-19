@@ -4,6 +4,15 @@ using System.IO;
 using System.Net;
 using System.Text;
 
+class HttpClientHelper
+{
+    public enum Method
+    {
+        GET,
+        POST
+    }
+}
+
 class HttpClient
 {
     private HttpWebRequest request;
@@ -11,7 +20,6 @@ class HttpClient
     private Cookie cookie;
     private CookieContainer cookieContainer;
     private Dictionary<string, string> postKeyValuePairs, headersKeyValuePairs;
-    private string param;
     private Stream stream;
     private StreamReader reader;
 
@@ -24,6 +32,8 @@ class HttpClient
 
     public HttpClient()
     {
+        postKeyValuePairs = new Dictionary<string, string>();
+        headersKeyValuePairs = new Dictionary<string, string>();
     }
 
     public HttpClient(Dictionary<string, string> _postKeyValuePairs)
@@ -110,6 +120,35 @@ class HttpClient
         headersKeyValuePairs.Add(_key, _value);
     }
 
+    //HttpWebRequest
+    private HttpWebRequest CreateInstance(Uri _requestUri, string _method, CookieContainer _cookieContainer, Dictionary<string, string> _headersKeyValuePairs)
+    {
+        HttpWebRequest httpWebRequest;
+        httpWebRequest = (HttpWebRequest)WebRequest.Create(_requestUri);
+        httpWebRequest.Method = _method;
+
+        if (_cookieContainer != null)
+            httpWebRequest.CookieContainer = _cookieContainer;
+
+        if (_headersKeyValuePairs != null)
+            foreach (var pair in _headersKeyValuePairs)
+                httpWebRequest.Headers.Add(pair.Key, pair.Value);
+
+        return httpWebRequest;
+    }
+
+    private byte[] GetParamByte(Dictionary<string, string> _KeyValuePairs)
+    {
+        byte[] pByte;
+        string param = "";
+        if (_KeyValuePairs != null)
+            foreach (string key in _KeyValuePairs.Keys)
+                param += $"{key}={_KeyValuePairs[key]}&";
+        pByte = Encoding.ASCII.GetBytes(param);
+
+        return pByte;
+    }
+
     public string Get()
     {
         if (RequestUri == null)
@@ -117,15 +156,7 @@ class HttpClient
 
         try
         {
-            request = (HttpWebRequest)WebRequest.Create(RequestUri);
-            request.Method = "GET";
-            if (cookieContainer != null)
-                request.CookieContainer = cookieContainer;
-
-            if (headersKeyValuePairs != null)
-                foreach (var pair in headersKeyValuePairs)
-                    request.Headers.Add(pair.Key, pair.Value);
-
+            request = CreateInstance(RequestUri, "GET", cookieContainer, headersKeyValuePairs);
             request.Accept = Accept;
             request.ContentType = ContentType;
             request.Referer = Referer;
@@ -151,29 +182,17 @@ class HttpClient
 
         try
         {
-            request = (HttpWebRequest)WebRequest.Create(RequestUri);
-            request.Method = "POST";
-            if (cookieContainer != null)
-                request.CookieContainer = cookieContainer;
-
-            if (headersKeyValuePairs != null)
-                foreach (var pair in headersKeyValuePairs)
-                    request.Headers.Add(pair.Key, pair.Value);
-
-            param = "";
-            if (postKeyValuePairs != null)
-                foreach (string key in postKeyValuePairs.Keys)
-                    param += $"{key}={postKeyValuePairs[key]}&";
-            byte[] data = Encoding.ASCII.GetBytes(param);
+            request = CreateInstance(RequestUri, "POST", cookieContainer, headersKeyValuePairs);
+            byte[] pByte = GetParamByte(postKeyValuePairs);
 
             request.Accept = Accept;
             request.ContentType = ContentType;
             request.Referer = Referer;
             request.UserAgent = UserAgent;
             request.Expect = Expect;
-            request.ContentLength = data.Length;
+            request.ContentLength = pByte.Length;
             stream = request.GetRequestStream();
-            stream.Write(data, 0, data.Length);
+            stream.Write(pByte, 0, pByte.Length);
 
             response = (HttpWebResponse)request.GetResponse();
             stream = response.GetResponseStream();
