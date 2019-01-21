@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -24,6 +23,7 @@ class HttpClient
 
     public HttpClient()
     {
+        cookieContainer = new CookieContainer();
         headersKeyValuePairs = new Dictionary<string, string>();
         postKeyValuePairs = new Dictionary<string, string>();
     }
@@ -33,6 +33,7 @@ class HttpClient
     {
         if (_postKeyValuePairs == null)
             return;
+
         postKeyValuePairs = new Dictionary<string, string>(_postKeyValuePairs);
     }
 
@@ -48,9 +49,18 @@ class HttpClient
     }
 
     //Cookie
+    public void AddCookie(Uri _uri, string _key, string _value)
+    {
+        if (_uri == null)
+            return;
+
+        cookie = new Cookie(_key, _value);
+        cookieContainer.Add(_uri, cookie);
+    }
+
     public void SetCookie(Uri _uri, string _key, string _value)
     {
-        if (_uri == null || _key == "" || _value == "")
+        if (_uri == null)
             return;
 
         cookie = new Cookie(_key, _value);
@@ -183,8 +193,6 @@ class HttpClient
             response = (HttpWebResponse)request.GetResponse();
             stream = response.GetResponseStream();
             reader = new StreamReader(stream, Encoding.GetEncoding("Shift_JIS"));
-
-            Image image = Image.FromStream(response.GetResponseStream());
 
             return reader.ReadToEnd();
         }
