@@ -1,17 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text;
-
-class HttpClientHelper
-{
-    public enum Method
-    {
-        GET,
-        POST
-    }
-}
 
 class HttpClient
 {
@@ -32,18 +24,15 @@ class HttpClient
 
     public HttpClient()
     {
-        postKeyValuePairs = new Dictionary<string, string>();
         headersKeyValuePairs = new Dictionary<string, string>();
-    }
-
-    public HttpClient(Dictionary<string, string> _postKeyValuePairs)
-    {
-        postKeyValuePairs = new Dictionary<string, string>(_postKeyValuePairs);
+        postKeyValuePairs = new Dictionary<string, string>();
     }
 
     //Parameter
     public void SetParam(Dictionary<string, string> _postKeyValuePairs)
     {
+        if (_postKeyValuePairs == null)
+            return;
         postKeyValuePairs = new Dictionary<string, string>(_postKeyValuePairs);
     }
 
@@ -61,44 +50,41 @@ class HttpClient
     //Cookie
     public void SetCookie(Uri _uri, string _key, string _value)
     {
-        if (_uri == null)
+        if (_uri == null || _key == "" || _value == "")
             return;
 
-        if (_key == "" || _value == "")
-            return;
-
-        cookieContainer = new CookieContainer();
         cookie = new Cookie(_key, _value);
+        cookieContainer = new CookieContainer();
         cookieContainer.Add(_uri, cookie);
     }
 
     public void SetCookie(Uri _uri, Dictionary<string, string> _cookieKeyValuePairs)
     {
-        if (_uri == null)
+        if (_uri == null || _cookieKeyValuePairs == null)
             return;
 
-        if (_cookieKeyValuePairs != null)
+        cookieContainer = new CookieContainer();
+        foreach (var pair in _cookieKeyValuePairs)
         {
-            cookieContainer = new CookieContainer();
-            foreach (var pair in _cookieKeyValuePairs)
-            {
-                cookie = new Cookie(pair.Key, pair.Value);
-                cookieContainer.Add(_uri, cookie);
-            }
+            cookie = new Cookie(pair.Key, pair.Value);
+            cookieContainer.Add(_uri, cookie);
         }
     }
 
     public CookieCollection GetCookies(Uri _uri)
     {
+        if (request == null || request.CookieContainer == null)
+            return null;
+
         return request.CookieContainer.GetCookies(_uri);
     }
 
-    public CookieCollection GetResponseCookies()
+    public string GetResponseCookie()
     {
-        if (response == null)
+        if (response == null || response.Headers == null)
             return null;
 
-        return response.Cookies;
+        return response.Headers.Get("Set-Cookie");
     }
 
     //Header
@@ -165,7 +151,7 @@ class HttpClient
 
             response = (HttpWebResponse)request.GetResponse();
             stream = response.GetResponseStream();
-            reader = new StreamReader(stream);
+            reader = new StreamReader(stream, Encoding.GetEncoding("Shift_JIS"));
 
             return reader.ReadToEnd();
         }
@@ -197,6 +183,8 @@ class HttpClient
             response = (HttpWebResponse)request.GetResponse();
             stream = response.GetResponseStream();
             reader = new StreamReader(stream, Encoding.GetEncoding("Shift_JIS"));
+
+            Image image = Image.FromStream(response.GetResponseStream());
 
             return reader.ReadToEnd();
         }
