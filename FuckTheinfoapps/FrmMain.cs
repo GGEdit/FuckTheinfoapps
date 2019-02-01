@@ -19,6 +19,11 @@ namespace FuckTheinfoapps
             tApps = new Theinfoapps();
         }
 
+        private void FrmMain_Load(object sender, EventArgs e)
+        {
+            LoadPlayList();
+        }
+
         private void 再生PToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listView1.Items.Count >= 0 && listView1.SelectedIndices.Count == 1)
@@ -95,7 +100,7 @@ namespace FuckTheinfoapps
         {
             if (listView2.Items.Count <= 0)
                 return;
-            
+
             MPlayer.URL = listView2.SelectedItems[0].SubItems[2].Text;
             MPlayer.Ctlcontrols.play();
         }
@@ -166,7 +171,7 @@ namespace FuckTheinfoapps
                 return;
             }
             pNumber++;
-            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);    
+            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
         private bool ScanMusicList(int _sCount)
@@ -197,7 +202,7 @@ namespace FuckTheinfoapps
             Playlist pList;
             foreach (var data in obj.data.song_lists)
             {
-                pList = new Playlist(data.song_list_name.ToString(), data.song_list_id.ToString());
+                pList = new Playlist(data.song_list_name, data.song_list_id);
                 playListItem.Add(pList);
             }
             playList.DisplayMember = "Name";
@@ -219,6 +224,7 @@ namespace FuckTheinfoapps
                 itemx.SubItems.Add(data.url);
             }
             listView2.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+
         }
     }
 }

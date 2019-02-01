@@ -2,8 +2,8 @@
 {
     class Playlist
     {
-        public string Name;
-        public string Url;
+        public string Name { get; set; }
+        public string Url { get; set; }
 
         public Playlist(string _Name, string _Url)
         {
