@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -13,8 +14,12 @@ class HttpClient
     private Dictionary<string, string> postKeyValuePairs, headersKeyValuePairs;
     private Stream stream;
     private StreamReader reader;
+    private Image img;
 
     public Uri RequestUri;
+    public string MediaType;
+    public string TransferEncoding;
+    public string Connection;
     public string ContentType;
     public string Accept;
     public string Referer;
@@ -117,11 +122,17 @@ class HttpClient
     }
 
     //HttpWebRequest
-    private HttpWebRequest CreateInstance(Uri _requestUri, string _method, CookieContainer _cookieContainer, Dictionary<string, string> _headersKeyValuePairs)
+    private HttpWebRequest CreateInstance(Uri _requestUri, string _method, CookieContainer _cookieContainer = null, Dictionary<string, string> _headersKeyValuePairs = null)
     {
         HttpWebRequest httpWebRequest;
         httpWebRequest = (HttpWebRequest)WebRequest.Create(_requestUri);
         httpWebRequest.Method = _method;
+        httpWebRequest.Timeout = 5000;
+        httpWebRequest.Accept = Accept;
+        httpWebRequest.ContentType = ContentType;
+        httpWebRequest.Referer = Referer;
+        httpWebRequest.UserAgent = UserAgent;
+        httpWebRequest.Expect = Expect;
 
         if (_cookieContainer != null)
             httpWebRequest.CookieContainer = _cookieContainer;
@@ -145,29 +156,57 @@ class HttpClient
         return pByte;
     }
 
+    public HttpStatusCode GetResponseStatusCode()
+    {
+        if (response == null)
+            return 0;
+        return response.StatusCode;
+    }
+
     public string Get()
     {
         if (RequestUri == null)
             return null;
 
+        START:
         try
         {
             request = CreateInstance(RequestUri, "GET", cookieContainer, headersKeyValuePairs);
-            request.Accept = Accept;
-            request.ContentType = ContentType;
-            request.Referer = Referer;
-            request.UserAgent = UserAgent;
-            request.Expect = Expect;
-
             response = (HttpWebResponse)request.GetResponse();
             stream = response.GetResponseStream();
             reader = new StreamReader(stream, Encoding.GetEncoding("Shift_JIS"));
 
             return reader.ReadToEnd();
         }
-        catch
+        catch (Exception ex)
         {
+            if (ex.Message.Contains("タイムアウト"))
+                goto START;
+            else
+                return null;
+        }
+    }
+
+    public Image GetImage()
+    {
+        if (RequestUri == null)
             return null;
+
+        START:
+        try
+        {
+            request = CreateInstance(RequestUri, "GET", cookieContainer, headersKeyValuePairs);
+            response = (HttpWebResponse)request.GetResponse();
+            img = Image.FromStream(response.GetResponseStream());
+
+            return img;
+        }
+        catch (Exception ex)
+        {
+            if (ex.Message.Contains("タイムアウト"))
+                goto START;
+            else
+                return null;
         }
     }
 
@@ -176,16 +215,11 @@ class HttpClient
         if (RequestUri == null)
             return null;
 
+        START:
         try
         {
             request = CreateInstance(RequestUri, "POST", cookieContainer, headersKeyValuePairs);
             byte[] pByte = GetParamByte(postKeyValuePairs);
-
-            request.Accept = Accept;
-            request.ContentType = ContentType;
-            request.Referer = Referer;
-            request.UserAgent = UserAgent;
-            request.Expect = Expect;
             request.ContentLength = pByte.Length;
             stream = request.GetRequestStream();
             stream.Write(pByte, 0, pByte.Length);
@@ -196,9 +230,12 @@ class HttpClient
 
             return reader.ReadToEnd();
         }
-        catch
+        catch (Exception ex)
         {
-            return null;
+            if (ex.Message.Contains("タイムアウト"))
+                goto START;
+            else
+                return null;
         }
     }
 }
