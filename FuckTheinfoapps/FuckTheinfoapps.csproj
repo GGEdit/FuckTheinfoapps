@@ -68,10 +68,10 @@
     <Compile Include="FrmDLCnt.Designer.cs">
       <DependentUpon>FrmDLCnt.cs</DependentUpon>
     </Compile>
-    <Compile Include="HttpClient\HttpClient.cs" />
-    <Compile Include="HttpClient\HttpClientCookie.cs" />
-    <Compile Include="HttpClient\HttpClientHeader.cs" />
-    <Compile Include="HttpClient\HttpClientProxy.cs" />
+    <Compile Include="HClient\HClient.cs" />
+    <Compile Include="HClient\HClientCookie.cs" />
+    <Compile Include="HClient\HClientHeader.cs" />
+    <Compile Include="HClient\HClientProxy.cs" />
     <Compile Include="Playlist.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

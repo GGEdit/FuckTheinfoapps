@@ -1,20 +1,16 @@
 ﻿using System.Collections.Generic;
 
-class HttpClientHeader
+class HClientHeader
 {
     public Dictionary<string, string> headersKeyValuePairs;
     public Dictionary<string, string> postKeyValuePairs;
-
-    public string MediaType = "";
-    public string TransferEncoding = "";
-    public string Connection = "";
+    
     public string ContentType = "";
     public string Accept = "";
     public string Referer = "";
     public string UserAgent = "";
-    public string Expect = "";
 
-    public HttpClientHeader()
+    public HClientHeader()
     {
         headersKeyValuePairs = new Dictionary<string, string>();
         postKeyValuePairs = new Dictionary<string, string>();

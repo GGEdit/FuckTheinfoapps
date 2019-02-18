@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 
-class HttpClientCookie
+class HClientCookie
 {
     private Cookie cookie;
     public CookieContainer cookieContainer;
 
-    public HttpClientCookie()
+    public HClientCookie()
     {
         cookieContainer = new CookieContainer();
     }
 
-    public HttpClientCookie(Uri _uri, string _key, string _value)
+    public HClientCookie(Uri _uri, string _key, string _value)
     {
         cookieContainer = new CookieContainer();
         cookie = new Cookie(_key, _value);
@@ -51,19 +52,15 @@ class HttpClientCookie
         }
     }
 
-    public CookieCollection GetCookies(HttpClient _client, Uri _uri)
+    public string GetResponseCookie(HClient _client)
     {
-        if (_client.request == null || _client.request.CookieContainer == null)
+        if (_client.Response == null || _client.Response.Headers == null)
             return null;
 
-        return _client.request.CookieContainer.GetCookies(_uri);
-    }
+        var collection = _client.Response.Headers;
+        if (collection.TryGetValues("Set-Cookie", out IEnumerable<string> values))
+            return values.First();
 
-    public string GetResponseCookie(HttpClient _client)
-    {
-        if (_client.response == null || _client.response.Headers == null)
-            return null;
-
-        return _client.response.Headers.Get("Set-Cookie");
+        return null;
     }
 }

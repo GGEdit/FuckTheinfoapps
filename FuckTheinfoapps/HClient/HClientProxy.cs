@@ -1,15 +1,15 @@
 ﻿using System.Net;
 
-class HttpClientProxy
+class HClientProxy
 {
     public WebProxy wProxy;
 
-    public HttpClientProxy()
+    public HClientProxy()
     {
         wProxy = new WebProxy();
     }
 
-    public HttpClientProxy(string _ip, int _port)
+    public HClientProxy(string _ip, int _port)
     {
         wProxy = new WebProxy(_ip, _port);
     }
