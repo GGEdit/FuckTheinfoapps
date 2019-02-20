@@ -1,55 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 
 class HClientCookie
 {
-    private Cookie cookie;
-    public CookieContainer cookieContainer;
+    public Dictionary<string, string> CookieDictionary;
 
     public HClientCookie()
     {
-        cookieContainer = new CookieContainer();
+        CookieDictionary = new Dictionary<string, string>();
     }
 
-    public HClientCookie(Uri _uri, string _key, string _value)
+    public HClientCookie(string _key, string _value)
     {
-        cookieContainer = new CookieContainer();
-        cookie = new Cookie(_key, _value);
-        cookieContainer.Add(_uri, cookie);
+        CookieDictionary = new Dictionary<string, string>();
+        CookieDictionary.Add(_key, _value);
     }
 
-    public void AddCookie(Uri _uri, string _key, string _value)
+    public void AddCookie(string _key, string _value)
     {
-        if (_uri == null)
+        CookieDictionary.Add(_key, _value);
+    }
+
+    public void SetCookie(string _key, string _value)
+    {
+        CookieDictionary.Clear();
+        CookieDictionary.Add(_key, _value);
+    }
+
+    public void SetCookie(Dictionary<string, string> _cookieKeyValuePairs)
+    {
+        if (_cookieKeyValuePairs == null)
             return;
 
-        cookie = new Cookie(_key, _value);
-        cookieContainer.Add(_uri, cookie);
+        CookieDictionary.Clear();
+        foreach (var dic in _cookieKeyValuePairs)
+            CookieDictionary.Add(dic.Key, dic.Value);
     }
 
-    public void SetCookie(Uri _uri, string _key, string _value)
+    public void Clear()
     {
-        if (_uri == null)
-            return;
-
-        cookieContainer = new CookieContainer();
-        cookie = new Cookie(_key, _value);
-        cookieContainer.Add(_uri, cookie);
-    }
-
-    public void SetCookie(Uri _uri, Dictionary<string, string> _cookieKeyValuePairs)
-    {
-        if (_uri == null || _cookieKeyValuePairs == null)
-            return;
-
-        cookieContainer = new CookieContainer();
-        foreach (var pair in _cookieKeyValuePairs)
-        {
-            cookie = new Cookie(pair.Key, pair.Value);
-            cookieContainer.Add(_uri, cookie);
-        }
+        if (CookieDictionary != null)
+            CookieDictionary.Clear();
     }
 
     public string GetResponseCookie(HClient _client)

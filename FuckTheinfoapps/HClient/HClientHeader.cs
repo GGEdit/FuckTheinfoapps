@@ -4,7 +4,7 @@ class HClientHeader
 {
     public Dictionary<string, string> headersKeyValuePairs;
     public Dictionary<string, string> postKeyValuePairs;
-    
+
     public string ContentType = "";
     public string Accept = "";
     public string Referer = "";
@@ -35,6 +35,12 @@ class HClientHeader
             headersKeyValuePairs = new Dictionary<string, string>(_headersKeyValuePairs);
     }
 
+    public void ClearHeader()
+    {
+        if (headersKeyValuePairs != null)
+            headersKeyValuePairs.Clear();
+    }
+
     //Parameter
     public void AddParam(Dictionary<string, string> _postKeyValuePairs)
     {
@@ -53,5 +59,11 @@ class HClientHeader
             return;
 
         postKeyValuePairs = new Dictionary<string, string>(_postKeyValuePairs);
+    }
+
+    public void ClearParam()
+    {
+        if (postKeyValuePairs != null)
+            postKeyValuePairs.Clear();
     }
 }
