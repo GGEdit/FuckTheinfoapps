@@ -70,7 +70,7 @@ class HClient
     {
         HttpClient client = _client;
         HttpContent hContent = null;
-        
+
         client.DefaultRequestHeaders.Clear();
         //Cookie
         if (_clientCookie != null && _clientCookie.CookieDictionary != null)
@@ -185,11 +185,17 @@ class HClient
 
     public HttpStatusCode GetResponseStatusCode()
     {
+        if (Response == null)
+            return 0;
+
         return Response.StatusCode;
     }
 
     public string GetResponseStatusString()
     {
+        if (Response == null)
+            return "0";
+
         return Response.StatusCode.ToString();
     }
 }
