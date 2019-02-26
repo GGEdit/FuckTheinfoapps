@@ -1,14 +1,15 @@
 ﻿using Codeplex.Data;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FuckTheinfoapps
 {
     class Theinfoapps
     {
-        private HttpClient client;
-        private HttpClientHeader clientHeader;
-        private HttpClientCookie clientCookie;
+        private HClient client;
+        private HClientHeader clientHeader;
+        private HClientCookie clientCookie;
 
         private string getJsonUri;
         private dynamic obj;
@@ -17,29 +18,29 @@ namespace FuckTheinfoapps
 
         public Theinfoapps()
         {
-            client = new HttpClient();
-            clientHeader = new HttpClientHeader();
-            clientCookie = new HttpClientCookie();
-            clientCookie.SetCookie(new Uri("https://theinfoapps.com"), "sessionid", "sug3hctj326h6cex1xuwa9mc52judn0f");
+            client = new HClient();
+            clientHeader = new HClientHeader();
+            clientCookie = new HClientCookie();
+            clientCookie.SetCookie("sessionid", "sug3hctj326h6cex1xuwa9mc52judn0f");
         }
 
         public Theinfoapps(string sessionId)
         {
-            client = new HttpClient();
-            clientCookie.SetCookie(new Uri("https://theinfoapps.com"), "sessionid", sessionId);
+            client = new HClient();
+            clientCookie.SetCookie("sessionid", sessionId);
         }
 
         public Theinfoapps(string sessionId, string _idfa)
         {
-            client = new HttpClient();
-            clientCookie.SetCookie(new Uri("https://theinfoapps.com"), "sessionid", sessionId);
+            client = new HClient();
+            clientCookie.SetCookie("sessionid", sessionId);
             idfa = _idfa;
         }
 
-        public dynamic GetSongObj(string songName, int sCount)
+        public async Task<dynamic> GetSongObj(string songName, int sCount)
         {
             client.RequestUri = $"https://theinfoapps.com/myfm/search/v2/?appid=com.tenormusicfm.ios.fm&page_no={sCount}&query={songName}";
-            getJsonUri = client.Get(clientHeader, clientCookie);
+            getJsonUri = await client.Get(clientCookie, clientHeader);
             obj = DynamicJson.Parse(getJsonUri);
             if (!this.ExistsSongObject(obj))
             {
@@ -57,10 +58,10 @@ namespace FuckTheinfoapps
             return true;
         }
 
-        public dynamic GetPlaylistObj(string uid)
+        public async Task<dynamic> GetPlaylistObj(string uid)
         {
             client.RequestUri = $"https://theinfoapps.com/myfm/user/profile/?uid={uid}";
-            getJsonUri = client.Get(clientHeader, clientCookie);
+            getJsonUri = await client.Get(clientCookie, clientHeader);
             obj = DynamicJson.Parse(getJsonUri);
             if (!ExistsPlaylistObject(obj))
             {
@@ -79,10 +80,10 @@ namespace FuckTheinfoapps
             return true;
         }
 
-        public dynamic GetSongObjByPlayList(string songListid)
+        public async Task<dynamic> GetSongObjByPlayList(string songListid)
         {
             client.RequestUri = $"https://theinfoapps.com/myfm/songlist/detail/?client_send_version=-1&song_list_id={songListid}";
-            var result = client.Get(clientHeader, clientCookie);
+            var result = await client.Get(clientCookie, clientHeader);
 
             obj = DynamicJson.Parse(result);
             if (!ExistsSongObjByPlayList(obj))
@@ -116,7 +117,7 @@ namespace FuckTheinfoapps
             return true;
         }
 
-        public void SyncDLCount(string item_id, string optime, string type, string value)
+        public async void SyncDLCount(string item_id, string optime, string type, string value)
         {
             var dic = new Dictionary<string, string>();
             dic["sync_infos[][item_id]"] = item_id;
@@ -127,7 +128,7 @@ namespace FuckTheinfoapps
             client.RequestUri = $"https://theinfoapps.com/myfm/dlquota/sync/?idfa={idfa}";
             clientHeader.AddParam(dic);
             clientHeader.ContentType = "application/x-www-form-urlencoded";
-            var result = client.Post(clientHeader, clientCookie);
+            var result = await client.Post(clientCookie, clientHeader);
 
             obj = DynamicJson.Parse(result);
             if (!IsSyncDLCountSucceeded(obj))

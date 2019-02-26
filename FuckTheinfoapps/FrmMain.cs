@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FuckTheinfoapps
@@ -131,7 +132,7 @@ namespace FuckTheinfoapps
             LoadSongByPlayList();
         }
 
-        private void Scan()
+        private async void Scan()
         {
             if (scanButton.Text == "New Scan")
             {
@@ -148,13 +149,13 @@ namespace FuckTheinfoapps
                     MessageBox.Show("初期化に失敗しました。", "Infomation", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                if (!ScanMusicList(pNumber))
+                if (!await ScanMusicList(pNumber))
                 {
                     MessageBox.Show("お探しの曲は存在しません。", "Infomation", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 pNumber++;
-                ScanMusicList(pNumber);
+                await ScanMusicList(pNumber);
 
                 scanButton.Text = "New Scan";
                 nextButton.Enabled = true;
@@ -163,9 +164,9 @@ namespace FuckTheinfoapps
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
-        private void Next()
+        private async void Next()
         {
-            if (!ScanMusicList(pNumber))
+            if (!await ScanMusicList(pNumber))
             {
                 MessageBox.Show("これ以上は存在しません。", "Infomation", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -174,9 +175,9 @@ namespace FuckTheinfoapps
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
-        private bool ScanMusicList(int _sCount)
+        private async Task<bool> ScanMusicList(int _sCount)
         {
-            obj = tApps.GetSongObj(songName.Text, _sCount);
+            obj = await tApps.GetSongObj(songName.Text, _sCount);
             if (obj == null)
                 return false;
 
@@ -189,12 +190,12 @@ namespace FuckTheinfoapps
             return true;
         }
 
-        private void LoadPlayList()
+        private async void LoadPlayList()
         {
             playList.DataSource = null;
             playList.Items.Clear();
 
-            obj = tApps.GetPlaylistObj("u3859021544345334070001472");
+            obj = await tApps.GetPlaylistObj("u3859021544345334070001472");
             if (obj == null)
                 return;
 
@@ -210,10 +211,10 @@ namespace FuckTheinfoapps
             playList.DataSource = playListItem;
         }
 
-        private void LoadSongByPlayList()
+        private async void LoadSongByPlayList()
         {
             listView2.Items.Clear();
-            obj = tApps.GetSongObjByPlayList(((Playlist)playList.SelectedItem).Url);
+            obj = await tApps.GetSongObjByPlayList(((Playlist)playList.SelectedItem).Url);
             if (obj == null)
                 return;
 
