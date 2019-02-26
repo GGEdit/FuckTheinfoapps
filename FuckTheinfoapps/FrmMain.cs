@@ -20,9 +20,9 @@ namespace FuckTheinfoapps
             tApps = new Theinfoapps();
         }
 
-        private void FrmMain_Load(object sender, EventArgs e)
+        private async void FrmMain_Load(object sender, EventArgs e)
         {
-            LoadPlayList();
+            await LoadPlayList();
         }
 
         private void 再生PToolStripMenuItem_Click(object sender, EventArgs e)
@@ -117,19 +117,19 @@ namespace FuckTheinfoapps
             Scan();
         }
 
-        private void nextButton_Click(object sender, EventArgs e)
+        private async void nextButton_Click(object sender, EventArgs e)
         {
-            Next();
+            await Next();
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private async void button2_Click(object sender, EventArgs e)
         {
-            LoadPlayList();
+            await LoadPlayList();
         }
 
-        private void playList_SelectedIndexChanged(object sender, EventArgs e)
+        private async void playList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            LoadSongByPlayList();
+            await LoadSongByPlayList();
         }
 
         private async void Scan()
@@ -164,7 +164,7 @@ namespace FuckTheinfoapps
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
-        private async void Next()
+        private async Task Next()
         {
             if (!await ScanMusicList(pNumber))
             {
@@ -190,7 +190,7 @@ namespace FuckTheinfoapps
             return true;
         }
 
-        private async void LoadPlayList()
+        private async Task LoadPlayList()
         {
             playList.DataSource = null;
             playList.Items.Clear();
@@ -200,10 +200,9 @@ namespace FuckTheinfoapps
                 return;
 
             List<Playlist> playListItem = new List<Playlist>();
-            Playlist pList;
             foreach (var data in obj.data.song_lists)
             {
-                pList = new Playlist(data.song_list_name, data.song_list_id);
+                Playlist pList = new Playlist(data.song_list_name, data.song_list_id);
                 playListItem.Add(pList);
             }
             playList.DisplayMember = "Name";
@@ -211,10 +210,12 @@ namespace FuckTheinfoapps
             playList.DataSource = playListItem;
         }
 
-        private async void LoadSongByPlayList()
+        private async Task LoadSongByPlayList()
         {
             listView2.Items.Clear();
-            obj = await tApps.GetSongObjByPlayList(((Playlist)playList.SelectedItem).Url);
+
+            string songId = ((Playlist)playList.SelectedItem).Url;
+            obj = await tApps.GetSongObjByPlayList(songId);
             if (obj == null)
                 return;
 
@@ -225,7 +226,6 @@ namespace FuckTheinfoapps
                 itemx.SubItems.Add(data.url);
             }
             listView2.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-
         }
     }
 }

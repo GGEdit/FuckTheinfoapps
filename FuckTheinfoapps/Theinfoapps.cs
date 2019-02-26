@@ -18,23 +18,30 @@ namespace FuckTheinfoapps
 
         public Theinfoapps()
         {
-            client = new HClient();
-            clientHeader = new HClientHeader();
-            clientCookie = new HClientCookie();
-            clientCookie.SetCookie("sessionid", "sug3hctj326h6cex1xuwa9mc52judn0f");
+            CreateInstance("sug3hctj326h6cex1xuwa9mc52judn0f");
         }
 
         public Theinfoapps(string sessionId)
         {
-            client = new HClient();
-            clientCookie.SetCookie("sessionid", sessionId);
+            CreateInstance(sessionId);
         }
 
         public Theinfoapps(string sessionId, string _idfa)
         {
+            CreateInstance(sessionId, idfa);
+        }
+
+        private void CreateInstance(string sessionId = null, string _idfa = null)
+        {
             client = new HClient();
-            clientCookie.SetCookie("sessionid", sessionId);
-            idfa = _idfa;
+            clientHeader = new HClientHeader();
+            clientCookie = new HClientCookie();
+
+            if (sessionId != null)
+                clientCookie.SetCookie("sessionid", sessionId);
+
+            if(idfa != null)
+                idfa = _idfa;
         }
 
         public async Task<dynamic> GetSongObj(string songName, int sCount)
