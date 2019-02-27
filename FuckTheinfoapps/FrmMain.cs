@@ -212,8 +212,10 @@ namespace FuckTheinfoapps
 
         private async Task LoadSongByPlayList()
         {
-            listView2.Items.Clear();
+            if (playList.SelectedItem == null)
+                return;
 
+            listView2.Items.Clear();
             string songId = ((Playlist)playList.SelectedItem).Url;
             obj = await tApps.GetSongObjByPlayList(songId);
             if (obj == null)
